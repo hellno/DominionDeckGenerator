@@ -129,7 +129,7 @@ public class DeckImportExportService {
 			Element tempDeckElement = doc.createElement("deck");
 			rootElement.appendChild(tempDeckElement);
 			
-			Element tempNameElement = doc.createElement("name");
+			Element tempNameElement = doc.createElement("title");
 			tempNameElement.appendChild(doc.createTextNode(tempDeck.getTitle()));
 			tempDeckElement.appendChild(tempNameElement);
 			
