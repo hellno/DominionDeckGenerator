@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<decks>
+  <deck>
+    <title>Burn!</title>
+    <comment>...</comment>
+    <cards>
+      <card name="Bibliothek"/>
+      <card name="Dorf"/>
+      <card name="Burggraben"/>
+      <card name="Jahrmarkt"/>
+      <card name="Bürokrat"/>
+      <card name="Kapelle"/>
+      <card name="Werkstatt"/>
+      <card name="Markt"/>
+      <card name="Miliz"/>
+      <card name="Hexe"/>
+    </cards>
+  </deck>
+</decks>

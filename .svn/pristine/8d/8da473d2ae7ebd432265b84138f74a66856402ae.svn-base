@@ -1,0 +1,260 @@
+package de.uniwue.jpp.deckgen;
+
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+
+import de.uniwue.jpp.deckgen.io.CardImportService;
+import de.uniwue.jpp.deckgen.io.DeckImportExportService;
+import de.uniwue.jpp.deckgen.model.ActionCard;
+import de.uniwue.jpp.deckgen.model.Deck;
+import de.uniwue.jpp.deckgen.model.ICard;
+import de.uniwue.jpp.deckgen.model.VictoryCard;
+import de.uniwue.jpp.deckgen.repository.CardRepository;
+import de.uniwue.jpp.deckgen.repository.DeckRepository;
+
+public class Dominion extends JFrame{
+
+	private static final long serialVersionUID = 1L;
+	
+	//View
+	private JPanel importPanel  = new JPanel();
+	private JPanel overviewPanel = new JPanel();
+	private JPanel generatePanel = new JPanel();
+	
+	private JPanel menuPanel = new JPanel();
+	private JPanel contentPanel = new JPanel();
+	
+	
+	//Inhalt
+	private CardRepository cardRepo=new CardRepository();
+	private DeckRepository deckRepo = new DeckRepository();
+	
+	private CardImportService cardInput = new CardImportService();
+	private DeckImportExportService deckIO = new DeckImportExportService(cardRepo);
+
+	private boolean cardImportDone = false;
+	private Set<Deck> tempDecks = new HashSet<Deck>();
+	
+	public static void main(String[] args) {
+		Dominion dominionGame = new Dominion();
+	}
+	
+	public Dominion() {
+		// TODO Auto-generated constructor stub
+		super();
+		JFrame.setDefaultLookAndFeelDecorated(true);
+		//this.setPreferredSize(new Dimension(800,500));
+		this.setName("Dominion");
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		this.add(menuPanel);
+		this.add(contentPanel);
+		contentPanel.add(importPanel);
+		contentPanel.add(overviewPanel);
+		contentPanel.add(generatePanel);
+		contentPanel.setPreferredSize(new Dimension(700,300));
+		
+		generateImportPanel();
+		generateOverviewPanel();
+		generateGeneratePanel();
+		
+		generateMenuPanel();
+		
+		this.setLayout(new GridLayout(2,1));
+		this.pack();
+		this.setVisible(true);
+	}
+
+	private void generateMenuPanel() {
+		Action changeFrontPanelToStart = new ChangeFrontPanel(this, "startPanel");
+		Action changeFrontPanelToOverview = new ChangeFrontPanel(this, "overviewPanel");
+		//Action changeFrontPanelToGenerate = new ChangeFrontPanel(this, "generatePanel");
+		
+		JButton changeToImportPanel = new JButton(changeFrontPanelToStart);
+		JButton changeToOverviewPanel = new JButton(changeFrontPanelToOverview);
+		//JButton changeToGeneratePanel = new JButton(changeFrontPanelToGenerate);
+		
+		menuPanel.add(changeToImportPanel);
+		menuPanel.add(changeToOverviewPanel);
+		//menuPanel.add(changeToGeneratePanel);
+		
+		menuPanel.setPreferredSize(new Dimension(800,80));
+	}
+
+	private void generateImportPanel(){
+		importPanel.setName("startPanel");
+		
+		Action importAction = new ImportAction(importPanel, this, true);
+		JButton importButton = new JButton(importAction);
+		importButton.setText("CardImport...");
+		importPanel.add(importButton);
+	}
+	
+	private void generateOverviewPanel(){		
+		overviewPanel.setName("overviewPanel");
+		overviewPanel.setVisible(false);
+		
+		
+		Action importAction = new ImportAction(importPanel, this, false);
+		JButton importButton = new JButton(importAction);
+		
+		importButton.setText("DeckImport...");
+		importButton.setName("importButton");
+		importButton.setEnabled(false);
+		overviewPanel.add(importButton);
+		
+		Action saveGeneratedDecks = new SaveGeneratedDecks("Save",this);
+		JButton saveButton = new JButton(saveGeneratedDecks);
+		saveButton.setName("saveButton");
+		overviewPanel.add(saveButton);
+		
+		Action changeFrontPanelToGenerate = new ChangeFrontPanel(this, "generatePanel");
+		JButton generateButton = new JButton(changeFrontPanelToGenerate);
+		generateButton.setText("New");
+		generateButton.setName("generateButton");
+		overviewPanel.add(generateButton);
+		
+		JList<Deck> decksList = new JList<Deck>();
+		decksList.setVisible(true);
+		decksList.setName("decksList");
+		
+		overviewPanel.setLayout(new GridLayout(3,2));
+		overviewPanel.add(decksList);
+		
+		
+		for(int i=0;i<overviewPanel.getComponentCount();i++){
+				System.out.println(overviewPanel.getComponent(i).getName() + ": "+ i);
+		}
+	}
+	
+	private void generateGeneratePanel(){
+		generatePanel.setName("generatePanel");
+		generatePanel.setVisible(false);
+		
+		JLabel testLabelGenerate = new JLabel("GENERATE");
+		generatePanel.add(testLabelGenerate);
+	}
+	
+	
+	public void changeFrontPanel(String newFrontPanel){
+		switch(newFrontPanel){
+			case("startPanel"):
+				importPanel.setVisible(true);
+				overviewPanel.setVisible(false);
+				generatePanel.setVisible(false);
+				break;	
+			case("overviewPanel"):
+				importPanel.setVisible(false);
+				overviewPanel.setVisible(true);
+				generatePanel.setVisible(false);
+				
+				if(cardImportDone)
+					overviewPanel.getComponent(0).setEnabled(true);
+					
+				break;	
+			case("generatePanel"):
+				importPanel.setVisible(false);
+				overviewPanel.setVisible(false);
+				generatePanel.setVisible(true);
+				break;
+			default:
+				System.out.println("Falsche changeFrontPanel-Auswahl");
+				break;
+		}
+		
+	}
+	
+	public void importCards(InputStream in) {
+		int countBeforeImport = cardRepo.getAll().size();
+		Set<ICard> importedCards = null;
+		importedCards = cardInput.importFrom(in);
+		cardRepo.addAll(importedCards);
+		cardImportIsDone();
+		System.out.println("Karten erfolgreich importiert, neue Karten: " + ( cardRepo.getAll().size() - countBeforeImport));
+	}
+	
+	public void saveDecksToRepo(){
+		deckRepo.addAll(tempDecks);
+	}
+	
+	private void cardImportIsDone(){
+		cardImportDone = true;
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void addDecksToView(Set<Deck> newDecks){
+		Deck[] allDecks = new Deck[newDecks.size()];
+		JList<Deck> decksList=null;
+		Iterator<Deck> myIterator = newDecks.iterator();
+		int count=0;
+		while(myIterator.hasNext()){
+			Deck tempDeck = myIterator.next();
+			allDecks[count]=tempDeck;
+			count++;
+		}
+		
+		for(Component tempComp : overviewPanel.getComponents()){
+			System.out.println(tempComp.getName());
+			if(tempComp.getName().equals("decksList"))
+				decksList=(JList<Deck>) tempComp;
+		}
+		decksList.setListData(allDecks);
+		
+		
+	}
+	
+	public void importDecks(InputStream in) {
+		Set<Deck> importedDecks = null;
+		importedDecks = deckIO.importFrom(in);
+		addDecksToView(importedDecks);
+		tempDecks.addAll(importedDecks);
+		System.out.println("Decks erfolgreich importiert");
+		
+	}
+	private Deck[] getTestDeck(){
+		ActionCard eins = new ActionCard("Bibliothek", "macht nix", "Basis", 23);
+		ActionCard zwei = new ActionCard("Dorf", "macht nix", "Basis", 23);
+		ActionCard drei = new ActionCard("Burggraben", "macht nix", "Basis", 23);
+		ActionCard vier = new ActionCard("Jahrmarkt", "macht nix", "Basis", 23);
+		ActionCard fünf = new ActionCard("Bürokrat", "macht nix", "Basis", 23);
+		ActionCard sechs = new ActionCard("Kapelle", "macht nix", "Basis", 23);
+		ActionCard sieben = new ActionCard("Werkstatt", "macht nix", "Basis", 23);
+		ActionCard acht = new ActionCard("Markt", "macht nix", "Basis", 23);
+		ActionCard neun = new ActionCard("Miliz", "macht nix", "Basis", 23);
+		VictoryCard victory = new VictoryCard("SIEG" , "einfach gewinnen", "Basis", 23,3);
+		
+		Set<ICard> tempDeckCards = new HashSet<ICard>();
+		tempDeckCards.add(eins);
+		tempDeckCards.add(zwei);
+		tempDeckCards.add(drei);
+		tempDeckCards.add(vier);
+		tempDeckCards.add(fünf);
+		tempDeckCards.add(sechs);
+		tempDeckCards.add(sieben);
+		tempDeckCards.add(acht);
+		tempDeckCards.add(neun);
+		tempDeckCards.add(victory);
+		Deck tempDeck = new Deck("ErstesDeck", "macht nix", tempDeckCards);
+		Deck[] tempDeckArray = {tempDeck, null};
+		return tempDeckArray;
+	}
+
+
+}

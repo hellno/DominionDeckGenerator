@@ -1,0 +1,9 @@
+eclipse.preferences.version=1
+encoding//src/de/uniwue/jpp/deckgen/Dominion.java=UTF-8
+encoding//src/de/uniwue/jpp/deckgen/io/DeckImportExportService.java=UTF-8
+encoding//src/de/uniwue/jpp/deckgen/model/NegativeNumberException.java=UTF-8
+encoding//src/de/uniwue/jpp/deckgen/repository/CardRepository.java=UTF-8
+encoding//src/de/uniwue/jpp/deckgen/repository/DeckRepository.java=UTF-8
+encoding//src/de/uniwue/jpp/deckgen/repository/myTestClass.java=UTF-8
+encoding//src/de/uniwue/jpp/deckgen/service/csp/BacktrackingSolver.java=UTF-8
+encoding//src/myTestClass.java=UTF-8

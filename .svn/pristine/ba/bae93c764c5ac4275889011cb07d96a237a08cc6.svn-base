@@ -1,0 +1,32 @@
+package de.uniwue.jpp.deckgen.service.csp;
+
+import de.uniwue.jpp.deckgen.model.ICard;
+import java.util.Set;
+
+/**
+ * A constraint that can be imposed on a set of cards.
+ */
+public interface IConstraint {
+
+    /**
+     * Checks whether or not a set of cards satisfies a constraint.
+     *
+     * @param cards the set of cards.
+     *
+     * @return <code>true</code> if the set satisfies the constraint, <code>false</code> otherwise.
+     */
+    public boolean isSatisfied(Set<ICard> cards);
+    
+    /**
+     * Checks whether or not a card satisfies a constraint.
+     *
+     * @param cards the set of cards.
+     *
+     * @return <code>true</code> if the set satisfies the constraint, <code>false</code> otherwise.
+     */
+    public boolean isSatisfied(ICard card);
+    
+    public String toString();
+    
+    public boolean equals(IConstraint constraint);
+}

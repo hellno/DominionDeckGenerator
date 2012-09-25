@@ -1,0 +1,56 @@
+package de.uniwue.jpp.deckgen.model;
+
+public abstract class AbstractCard implements ICard {
+
+	String name, description, extension;
+	int cost;
+	
+	protected AbstractCard(String name, String description, String extension, int cost){
+		super();
+		objectValidator.validate(name);
+		objectValidator.validate(description);
+		objectValidator.validate(extension);
+		objectValidator.validate(cost);
+		
+		this.name=name;
+		this.description=description;
+		this.extension=extension;
+		this.cost=cost;
+		
+		//System.out.println("Karte " + name + " erstellt");
+	}
+	
+	public boolean equals(Object object){
+		AbstractCard cardObject = (AbstractCard) object;
+		if(cardObject.getName().equals(this.name))
+			return false;
+		else
+			return true;
+	}
+	
+	public int hashCode(){
+		return name.hashCode();
+	}
+	
+	
+	public String getName() {		 
+		return name;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public String getExtension() {
+		return extension;
+	}
+
+	public int getCost() {
+		return cost;
+	}
+	
+	public String toString(){
+		return name + " - " + description + " - " + extension + " - " + "Cost: " +  cost;
+	}
+
+}

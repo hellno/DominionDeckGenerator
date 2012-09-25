@@ -1,0 +1,176 @@
+<?xml version="1.0" ?>
+<cards>
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Abenteurer</name>
+        <description>Decke solange Karten vom Nachziehstapel auf, bis 2 Geldkarten offen liegen. Nimm die Geldkarten auf die Hand, lege die übrigen aufgedeckten Karten ab.</description>
+        <cost>6</cost>
+        <extension>Basisspiel</extension>
+    </card>
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Bibliothek</name>
+        <description>Ziehe solange Karten nach, bis du 7 Karten auf der Hand hast. Aktionskarten kannst du zur Seite legen, sobald du sie ziehst. Die zur Seite gelegten Karten werden am Ende der Aktion abgelegt.</description>
+        <cost>5</cost>
+        <extension>Basisspiel</extension>
+    </card>
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Burggraben</name>
+        <description>+ 2 Karten, Wenn ein Mitspieler eine Angriffskarte ausspielt, kannst du diese Karte aus deiner hand vorzeigen. Der Angriff hat keine Wirkung auf dich.</description>
+        <cost>2</cost>
+        <extension>Basisspiel</extension>
+    </card>
+
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Bürokrat</name>
+        <description>Nimm dir ein Silber und lege es verdeckt auf deinen Nachziehstapel. Jeder Mitspieler deckt eine Punktekarte aus seiner Hand auf und legt sie verdeckt auf seinen Nachziehstapl. Hat ein Spieler keine Punktekarte auf der Hand, muss er seine Kartenhand vorzeigen.</description>
+        <cost>4</cost>
+        <extension>Basisspiel</extension>
+    </card>
+
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Dieb</name>
+        <description>Jeder Mitspieler deckt die obersten beiden Karten von seinem Nachziehstapel auf. Haben die Mitspieler einer oder mehrere Geldkarten aufgedeckt, muss jeder eine davon (nach deiner Wahl) entsorgen. Du kannst eine beliebige Zahl der entsorgten Karten bei dir ablegen. Die übrigen aufgedeckten Karten legen die Spieler bei sich ab.</description>
+        <cost>4</cost>
+        <extension>Basisspiel</extension>
+    </card>
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Dorf</name>
+        <description>+ 1 Karte, + 2 Aktionen</description>
+        <cost>3</cost>
+        <extension>Basisspiel</extension>
+    </card>
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Festmahl</name>
+        <description>Entsorge diese Karte. Nimm dir eine Karte, die bis zu 5 kostet.</description>
+        <cost>4</cost>
+        <extension>Basisspiel</extension>
+    </card>
+    <card type="de.uniwue.jpp.deckgen.model.VictoryCard">
+        <name>Gärten</name>
+        <description>Wert 1 Siegpunkt für je 10 Karten im eigenen Kartensatz (abgerundet).</description>
+        <cost>4</cost>
+        <victorypoints>0</victorypoints>
+        <extension>Basisspiel</extension>
+    </card>
+    <card type="de.uniwue.jpp.deckgen.model.MoneyCard">
+        <name>Die Bank</name>
+        <description>Wert 1 Geldstück für jede Geldkarte die im Spiel ist (diese eingeschlossen).</description>
+        <cost>7</cost>
+        <value>1</value>
+        <extension>Blütezeit</extension>
+    </card>
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Geldverleiher</name>
+        <description>Entsorge ein Kupfer aus deiner Hand. Wenn du das machst, + 3 Geld</description>
+        <cost>4</cost>
+        <extension>Basisspiel</extension>
+    </card>
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Hexe</name>
+        <description> + 2 Karten, Jeder Mitspieler muss sich eine Fluchkarte nehmen</description>
+        <cost>5</cost>
+        <extension>Basisspiel</extension>
+    </card>
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Holzfäller</name>
+        <description>+ 1 Kauf, + 2 Geld</description>
+        <cost>3</cost>
+        <extension>Basisspiel</extension>
+    </card>
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Jahrmarkt</name>
+        <description>+ 2 Aktionen, + 1 Kauf, + 2 Geld</description>
+        <cost>5</cost>
+        <extension>Basisspiel</extension>
+    </card>
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Kanzler</name>
+        <description>+ 2 Geld, Lege sofort deinen kompletten Nachziehstapel ab.</description>
+        <cost>3</cost>
+        <extension>Basisspiel</extension>
+    </card>
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Kapelle</name>
+        <description>Entsorge bis zu 4 Karten aus deiner Hand.</description>
+        <cost>2</cost>
+        <extension>Basisspiel</extension>
+    </card>
+
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Keller</name>
+        <description>+ 1 Aktion, Lege eine beliebige Anzahl Karten aus deiner Hand ab. Ziehe für jede abgelegte Karte eine Karte nach.</description>
+        <cost>2</cost>
+        <extension>Basisspiel</extension>
+    </card>
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Laboratorium</name>
+        <description>+2 Karten, +1 Aktion</description>
+        <cost>5</cost>
+        <extension>Basisspiel</extension>
+    </card>
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Markt</name>
+        <description>+ 1 Aktion, + 1 Karte, + 1 Kauf, + 1 Geld</description>
+        <cost>5</cost>
+        <extension>Basisspiel</extension>
+    </card>
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Miliz</name>
+        <description>+ 2 Geld, Jeder Mitspieler legt Karten ab, bis er nur noch 3 Karten auf der Hand hat.</description>
+        <cost>4</cost>
+        <extension>Basisspiel</extension>
+    </card>
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Mine</name>
+        <description>Entsorge eine Geldkarte aus deiner Hand. Nimm die eine Geldkarte, die bis zu 3 mehr kostet. Nimm diese Geldkarte sofort auf die Hand.</description>
+        <cost>5</cost>
+        <extension>Basisspiel</extension>
+    </card>
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Ratsversammlung</name>
+        <description>+ 4 Karten, + 1 Kauf, Jeder Mitspieler zieht sofort eine Karte nach</description>
+        <cost>5</cost>
+        <extension>Basisspiel</extension>
+    </card>
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Schmiede</name>
+        <description>+3 Karten</description>
+        <cost>4</cost>
+        <extension>Basisspiel</extension>
+    </card>
+
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Spion</name>
+        <description> + 1 Karte, + 1 Aktion, Jeder Spieler (auch du selbst) deckt die oberste Karte von seinem Nachziehstapel auf. Du entscheidest, ob er sie ablegt oder zurück auf seinen Nachziehstapel legt.</description>
+        <cost>4</cost>
+        <extension>Basisspiel</extension>
+    </card>
+
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Thronsaal</name>
+        <description>Wähle eine Aktionskarte aus deiner Hand. Spiele diese Aktionskarte zweimal aus.</description>
+        <cost>4</cost>
+        <extension>Basisspiel</extension>
+    </card>
+
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Umbau</name>
+        <description> Entsorge eine Karte aus deiner Hand. Nimm dir eine Karte die bis zu 2 mehr kostet als die entsorgte Karte</description>
+        <cost>4</cost>
+        <extension>Basisspiel</extension>
+    </card>
+
+    <card type="de.uniwue.jpp.deckgen.model.ActionCard">
+        <name>Werkstatt</name>
+        <description>Nimm dir eine Karte die bis zu 4 kostet.</description>
+        <cost>3</cost>
+        <extension>Basisspiel</extension>
+    </card>
+
+    <!--<card type="de.uniwue.jpp.deckgen.model.ActionCard">-->
+        <!--<name></name>-->
+        <!--<description></description>-->
+        <!--<cost></cost>-->
+        <!--<extension>Basisspiel</extension>-->
+    <!--</card>-->
+
+</cards>

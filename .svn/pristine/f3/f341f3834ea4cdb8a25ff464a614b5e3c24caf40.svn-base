@@ -1,0 +1,71 @@
+package de.uniwue.jpp.deckgen.model;
+
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
+public class Deck {
+
+	String title, comment;
+	Set<ICard> cards = new HashSet<ICard>();
+	
+	public Deck(String title, String comment, java.util.Set<ICard> cards) {
+		super();
+		objectValidator.validate(title);
+		objectValidator.validate(comment);
+		objectValidator.validate(cards);
+		
+		this.cards=cards;
+		this.title=title;
+		this.comment=comment;
+		
+		System.out.println("Deck " + title + " erstellt");
+	}
+	
+	public boolean contains(Object cardObject){
+		for(ICard tempCard : cards){
+			if(((AbstractCard)cardObject).equals(tempCard))
+				return true;
+		}
+		return false;
+	}
+	
+	
+	public String getTitle(){
+		return title;
+	}
+	public String getComment(){
+		return comment;
+	}
+	public Set<ICard> getCards(){
+		HashSet<ICard> tempCards = new HashSet<ICard>();
+		tempCards.addAll(cards);
+		return tempCards;
+	}
+	public boolean equals(Deck deck){
+		return cards.equals(deck.getCards());
+		/*for(ICard tempCard : deck.getCards()){
+			boolean contains=false;
+			for(ICard compareCard : cards){
+				if(compareCard.getName().equals(tempCard.getName()))
+					contains=true;
+			}
+			if(!contains)
+				return false;
+		}
+		return true;*/
+	}
+	
+	public String toString(){
+		String outputString =  "["+title + " | " + comment + "] ";
+		Iterator<ICard> myIterator = cards.iterator();
+		while(myIterator.hasNext()){
+			outputString = outputString + myIterator.next().getName() + "\n ";
+		}
+		return outputString;
+	}
+
+	public int hashCode(){
+		return cards.hashCode();
+	}
+}

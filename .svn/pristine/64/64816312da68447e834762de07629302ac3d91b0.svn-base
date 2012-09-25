@@ -1,0 +1,50 @@
+package de.uniwue.jpp.deckgen.model;
+
+import java.util.HashSet;
+import java.util.Set;
+
+public class Deck {
+
+	String title, comment;
+	Set<ICard> cards = new HashSet<ICard>();
+	
+	public Deck(String title, String comment, java.util.Set<ICard> cards) {
+		super();
+		objectValidator.validate(title);
+		objectValidator.validate(comment);
+		objectValidator.validate(cards);
+		
+		this.cards=cards;
+		this.title=title;
+		this.comment=comment;
+		
+		System.out.println("Deck " + title + " erstellt");
+	}
+	
+	public String getTitle(){
+		return title;
+	}
+	public String getComment(){
+		return comment;
+	}
+	public Set<ICard> getCards(){
+		HashSet<ICard> tempCards = new HashSet<ICard>();
+		tempCards.addAll(cards);
+		return tempCards;
+	}
+	public boolean equals(Deck deck){
+		if(deck.getCards().containsAll(cards)){
+			return true;
+		}
+		else
+			return false;
+	}
+
+	public int hashCode(){
+		int sum=0;
+		for(ICard tempCard : cards){
+			sum+=tempCard.getCost();
+		}
+		return sum;
+	}
+}

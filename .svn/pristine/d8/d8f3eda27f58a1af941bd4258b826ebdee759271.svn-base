@@ -1,0 +1,117 @@
+package de.uniwue.jpp.deckgen.io;
+
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import de.uniwue.jpp.deckgen.model.ActionAndVictoryCard;
+import de.uniwue.jpp.deckgen.model.ActionCard;
+import de.uniwue.jpp.deckgen.model.ICard;
+import de.uniwue.jpp.deckgen.model.MoneyAndVictoryCard;
+import de.uniwue.jpp.deckgen.model.MoneyCard;
+import de.uniwue.jpp.deckgen.model.VictoryCard;
+
+public class CardImportService {
+
+	public CardImportService() {
+		super();
+	}
+	public Set<ICard> importFrom(InputStream in) throws ImportException{
+		
+		System.out.println("CardsImport gestartet");
+		Set<ICard> cards = new HashSet<ICard>();
+		Document doc;
+		XPath xp;
+		
+		try{
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder docBuilder = dbFactory.newDocumentBuilder();
+			doc = docBuilder.parse(in);
+
+			XPathFactory xpf = XPathFactory.newInstance();
+			xp = xpf.newXPath();
+		
+			String name = "check";
+			int count = 0;
+			XPathExpression expr = xp.compile("//cards/card");
+			NodeList cardList =(NodeList) expr.evaluate(doc,XPathConstants.NODESET);
+			
+			while(!name.isEmpty() && count<cardList.getLength()){
+				if(cardList.item(count).getNodeType()==1){
+					name = getTagValue("name" , (Element)cardList.item(count));
+					Node tempNode = cardList.item(count);
+					String type = tempNode.getAttributes().item(0).toString();
+					type = type.substring(6,type.length()-1);
+					cards.add(createCard((Element)tempNode, type));
+				}
+				count++;
+			}
+			System.out.println("CardsImport beendet");
+			
+			return cards;
+		}
+		catch(Exception e){
+			System.out.println("Fehler in CardImport: " + e.getMessage());
+			throw new ImportException();
+		}
+		
+	}
+	
+
+	private ICard createCard(Element tempElement, String type) {
+		String name = getTagValue("name",tempElement);
+		String description = getTagValue("description", tempElement);
+		String extension = getTagValue("extension", tempElement);
+		int cost = Integer.parseInt(getTagValue("cost", tempElement));
+		int victoryPoints,value;
+		switch(type){
+		case("de.uniwue.jpp.deckgen.model.ActionCard"):
+			ActionCard actionCard = new ActionCard(name, description, extension, cost);
+			return actionCard;
+			
+		case("de.uniwue.jpp.deckgen.model.MoneyCard"):
+			value = Integer.parseInt(getTagValue("value",tempElement));
+			MoneyCard moneyCard = new MoneyCard(name, description, extension, cost, value);
+			return moneyCard;
+		case("de.uniwue.jpp.deckgen.model.VictoryCard"):
+			victoryPoints = Integer.parseInt(getTagValue("victorypoints",tempElement));
+			VictoryCard victoryCard = new VictoryCard(name, description, extension, cost, victoryPoints);
+			return victoryCard;
+		case("de.uniwue.jpp.deckgen.model.MoneyAndVictoryCard"):
+			value = Integer.parseInt(getTagValue("value",tempElement));
+			victoryPoints = Integer.parseInt(getTagValue("victorypoints",tempElement));
+			MoneyAndVictoryCard monVicCard = new MoneyAndVictoryCard(name, description, extension, cost, value, victoryPoints);
+			return monVicCard;
+			
+		case("de.uniwue.jpp.deckgen.model.ActionAndVictoryCard"):
+			victoryPoints = Integer.parseInt(getTagValue("victorypoints",tempElement));
+			ActionAndVictoryCard actVicCard = new ActionAndVictoryCard(name, description, extension, cost, victoryPoints);
+			return actVicCard;
+		default:
+			System.out.println("Fehler beim Erkennen des Kartentyps");
+			throw new ImportException();		
+		}
+		
+		
+	}
+	private static String getTagValue(String sTag, Element eElement) {
+		NodeList nlList = eElement.getElementsByTagName(sTag).item(0).getChildNodes();
+ 
+	        Node nValue = (Node) nlList.item(0);
+ 
+		return nValue.getNodeValue();
+	  }
+
+}
