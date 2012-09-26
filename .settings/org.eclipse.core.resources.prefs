@@ -1,4 +1,5 @@
 eclipse.preferences.version=1
+encoding//src/de/uniwue/jpp/deckgen/DeckListListener.java=UTF-8
 encoding//src/de/uniwue/jpp/deckgen/Dominion.java=UTF-8
 encoding//src/de/uniwue/jpp/deckgen/io/DeckImportExportService.java=UTF-8
 encoding//src/de/uniwue/jpp/deckgen/model/NegativeNumberException.java=UTF-8

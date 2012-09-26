@@ -1,15 +1,23 @@
 package de.uniwue.jpp.deckgen;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
 import java.awt.GridLayout;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 import javax.swing.Action;
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -17,9 +25,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 import de.uniwue.jpp.deckgen.io.CardImportService;
 import de.uniwue.jpp.deckgen.io.DeckImportExportService;
+import de.uniwue.jpp.deckgen.io.ExportException;
 import de.uniwue.jpp.deckgen.model.Deck;
 import de.uniwue.jpp.deckgen.model.ICard;
 import de.uniwue.jpp.deckgen.model.objectValidator;
@@ -67,6 +77,9 @@ public class Dominion extends JFrame{
 	private BacktrackingSolver backtrackSolver = new BacktrackingSolver();
 	
 	private Set<ICard> solvedCards = new HashSet<ICard>();
+	//..detailView
+	private JList<String> cardDetailView = new JList<String>();
+	
 	
 	public static void main(String[] args) {
 		Dominion dominionGame = new Dominion();
@@ -97,27 +110,29 @@ public class Dominion extends JFrame{
 	}
 	
 	public Dominion() {
-		// TODO Auto-generated constructor stub
 		super();
 		JFrame.setDefaultLookAndFeelDecorated(true);
-		//this.setPreferredSize(new Dimension(800,500));
+		this.setPreferredSize(new Dimension(800,500));
 		this.setName("Dominion");
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		this.add(menuPanel);
-		this.add(contentPanel);
+		
+		this.add(menuPanel, BorderLayout.PAGE_START);
+		this.add(contentPanel, BorderLayout.CENTER);
+		
 		contentPanel.add(importPanel);
 		contentPanel.add(overviewPanel);
 		contentPanel.add(generatePanel);
+		
+		menuPanel.setPreferredSize(new Dimension(900,50));
 		contentPanel.setPreferredSize(new Dimension(700,300));
+		generateMenuPanel();
 		
 		generateImportPanel();
 		generateOverviewPanel();
 		generateGeneratePanel();
 		
-		generateMenuPanel();
 		
-		this.setLayout(new GridLayout(2,1));
 		this.pack();
 		this.setVisible(true);
 	}
@@ -125,29 +140,27 @@ public class Dominion extends JFrame{
 	private void generateMenuPanel() {
 		Action changeFrontPanelToStart = new ChangeFrontPanelAction(this, "startPanel");
 		Action changeFrontPanelToOverview = new ChangeFrontPanelAction(this, "overviewPanel");
-		//Action changeFrontPanelToGenerate = new ChangeFrontPanel(this, "generatePanel");
 		
 		JButton changeToImportPanel = new JButton(changeFrontPanelToStart);
+		changeToImportPanel.setText("Start");
 		JButton changeToOverviewPanel = new JButton(changeFrontPanelToOverview);
-		//JButton changeToGeneratePanel = new JButton(changeFrontPanelToGenerate);
+		changeToOverviewPanel.setText("Übersicht");
+		changeToOverviewPanel.setEnabled(false);
 		
 		menuPanel.add(changeToImportPanel);
 		menuPanel.add(changeToOverviewPanel);
-		//menuPanel.add(changeToGeneratePanel);
 		
 		//menuPanel.setPreferredSize(new Dimension(50,800));
-		
 	}
 
 	private void generateImportPanel(){
 		importPanel.setName("startPanel");
-		//importPanel.setLayout(new GridLayout(2,1));
 		
 		Action importAction = new ImportAction(importPanel, this, true);
 		JButton importButton = new JButton(importAction);
 		importButton.setText("CardImport...");
 		importButton.setPreferredSize(new Dimension(130,70));
-		importPanel.add(importButton);
+		importPanel.add(importButton, BorderLayout.LINE_START);
 		
 		cardImportOverview.setVisible(false);
 		cardImportOverview.setName("cardList");
@@ -158,24 +171,21 @@ public class Dominion extends JFrame{
 	}
 	
 	private void generateOverviewPanel(){		
-		overviewPanel.setLayout(new GridLayout(1,2));
 		overviewPanel.setName("overviewPanel");
 		overviewPanel.setVisible(false);
 		
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new GridLayout(3,1));
-		buttonPanel.setPreferredSize(new Dimension(130,130));
-		overviewPanel.add(buttonPanel);
+		overviewPanel.add(buttonPanel, BorderLayout.LINE_START);
 		JPanel listPanel = new JPanel();
 		listPanel.setPreferredSize(new Dimension(200,150));
-		overviewPanel.add(listPanel);
+		overviewPanel.add(listPanel, BorderLayout.CENTER);
 		
 		Action importAction = new ImportAction(importPanel, this, false);
 		JButton importButton = new JButton(importAction);
 		
 		importButton.setText("DeckImport...");
 		importButton.setName("importButton");
-		importButton.setEnabled(false);
 		buttonPanel.add(importButton);
 		
 		Action saveGeneratedDecks = new SaveGeneratedDecks("Save",this);
@@ -192,43 +202,43 @@ public class Dominion extends JFrame{
 		JList<Deck> decksList = new JList<Deck>();
 		decksList.setVisible(true);
 		decksList.setName("decksList");
+		listPanel.add(decksList);
 		
-		overviewPanel.add(deckDetailPanel);
-		deckDetailPanel.setLayout(new GridLayout(3,1));
-		
+		overviewPanel.add(deckDetailPanel, BorderLayout.LINE_END);
+		deckDetailPanel.setLayout(new GridLayout(2,2));
 		JLabel titleLabel = new JLabel();
 		titleLabel.setName("titleLabel");
-		deckDetailPanel.add(titleLabel);
+		titleLabel.setText("Title:");
+		deckDetailPanel.add(titleLabel, BorderLayout.PAGE_START);
+		
 		JLabel commentLabel = new JLabel();
 		commentLabel.setName("commentLabel");
-		deckDetailPanel.add(commentLabel);
-		JList<ICard> cardsList = new JList<ICard>();
-		cardsList.setName("cardsList");
-		deckDetailPanel.add(cardsList);
+		commentLabel.setText("Comment: ");
+		deckDetailPanel.add(commentLabel, BorderLayout.PAGE_START);
 		
-		ListSelectionListener listener = new DeckListListener(this,deckDetailPanel, cardsList);
+		System.out.println("DetailViewCount: " + deckDetailPanel.getComponentCount());
+		
+		ListSelectionListener listener = new DeckListListener(this,deckDetailPanel);
 		decksList.addListSelectionListener(listener);
+		overviewPanel.add(cardDetailView, BorderLayout.LINE_END);
+		cardDetailView.setVisible(false);
 		
-		
-		listPanel.add(decksList);
 	}
 	
 	private void generateGeneratePanel(){
 		
 		generatePanel.setName("generatePanel");
-		generateContentPanel.setPreferredSize(new Dimension(300,300));
 		generatePanel.setVisible(false);
 		
 		generateContentPanel.setName("generateContentPanel");
-		generateContentPanel.setLayout(new GridLayout(2,2));
-		generatePanel.add(generateContentPanel);
+		generatePanel.add(generateContentPanel, BorderLayout.CENTER);
 		
 		generateSaveDeckPanel.setName("saveDeckPanel");
 		generateSaveDeckPanel.setVisible(false);
 		
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new GridLayout(3,1));
-		generateContentPanel.add(buttonPanel);
+		generateContentPanel.add(buttonPanel, BorderLayout.CENTER);
 		
 		Action addConstraintCardAction = new AddConstraintAction(this, cardRepo, cardList);
 		JButton addConstraintCardButton  = new JButton(addConstraintCardAction);
@@ -246,38 +256,38 @@ public class Dominion extends JFrame{
 		
 		constraintsList.setVisible(true);
 		constraintsList.setName("constraintsList");
-		generateContentPanel.add(new JScrollPane(constraintsList));
+		generateContentPanel.add(new JScrollPane(constraintsList), BorderLayout.LINE_START);
 		
 		cardList.setVisible(true);
 		cardList.setName("cardList");
-		generateContentPanel.add(new JScrollPane(cardList));
+		generateContentPanel.add(new JScrollPane(cardList), BorderLayout.LINE_END);
 				
 		extensionList.setVisible(true);
 		extensionList.setName("extensionList");
 		
 		generateSaveDeckPanel();
 		
-		generateContentPanel.add(new JScrollPane(extensionList));
+		generateContentPanel.add(new JScrollPane(extensionList), BorderLayout.LINE_END);
 		
 	}
 	
 	public void generateSaveDeckPanel(){
 		generatePanel.add(generateSaveDeckPanel);
 		
-		generateSaveDeckPanel.setLayout(new GridLayout(1,2));
-		//generateSaveDeckPanel.setPreferredSize(new Dimension(400,100));
 		
 		JPanel buttonAndInputPanel = new JPanel();
 		buttonAndInputPanel.setPreferredSize(new Dimension(300,150));
 		buttonAndInputPanel.setLayout(new GridLayout(3,1));
-		generateSaveDeckPanel.add(buttonAndInputPanel);
+		generateSaveDeckPanel.add(buttonAndInputPanel, BorderLayout.CENTER);
 		
 		
 		JTextField nameInput = new JTextField();
 		nameInput.setName("nameInput");
+		nameInput.setText("Name");
 		buttonAndInputPanel.add(nameInput);
 		JTextField commentInput = new JTextField();
 		commentInput.setName("commentInput");
+		commentInput.setText("Kommentar");
 		buttonAndInputPanel.add(commentInput);
 		
 		Action addDeckAction = new AddDeckAction(this, buttonAndInputPanel);
@@ -289,11 +299,12 @@ public class Dominion extends JFrame{
 		createdCardList.setName("cardList");
 		JScrollPane cardScrollPane = new JScrollPane(createdCardList);
 		cardScrollPane.setPreferredSize(new Dimension(200,200));
-		generateSaveDeckPanel.add(cardScrollPane);
-		
+			
+		generateSaveDeckPanel.add(cardScrollPane, BorderLayout.LINE_END);
+		//cardScrollPane.setVisible(false);
 		
 	}
-	
+
 	
 	public void changeFrontPanel(String newFrontPanel){
 		switch(newFrontPanel){
@@ -306,11 +317,6 @@ public class Dominion extends JFrame{
 				importPanel.setVisible(false);
 				overviewPanel.setVisible(true);
 				generatePanel.setVisible(false);
-				
-				//System.out.println("ButtonBreite: "+((JPanel) overviewPanel.getComponent(0)).getComponent(0).getWidth());
-				if(cardImportDone){
-					((JPanel) overviewPanel.getComponent(0)).getComponent(0).setEnabled(true);
-				}
 				break;	
 			case("generatePanel"):
 				constraints = new HashSet<IConstraint>();
@@ -405,6 +411,7 @@ public class Dominion extends JFrame{
 		
 		cardImportOverview.setListData(allCards);
 		cardImportOverview.setVisible(true);
+		menuPanel.getComponent(1).setEnabled(true);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -482,6 +489,27 @@ public class Dominion extends JFrame{
 		((JTextField)((JPanel)generateSaveDeckPanel.getComponent(0)).getComponent(1)).setText("");
 		createdCardList.removeAll();
 	}
+
+	public void exportDeckToFile() {
+		JFileChooser chooser = new JFileChooser();
+		FileNameExtensionFilter filter = new FileNameExtensionFilter(
+                "XML Files", "xml", "xsd");
+        chooser.setFileFilter(filter);
+        File file=null;
+		int returnVal = chooser.showDialog(this,"Export/Attach");
+		if(returnVal == JFileChooser.APPROVE_OPTION){
+			file = chooser.getSelectedFile();
+		}
+		
+		try {
+			deckIO.exportTo(deckRepo.getAll(), new FileOutputStream(file));
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+
 	
 
 }

@@ -20,6 +20,7 @@ public class SaveGeneratedDecks extends AbstractAction implements Action {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		dominion.saveDecksToRepo();
+		dominion.exportDeckToFile();
 		//System.out.println("Decks in Repo gespeichert");
 	}
 
