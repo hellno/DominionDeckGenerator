@@ -1,10 +1,9 @@
-package de.uniwue.jpp.deckgen.service.csp;
+package de.uniwue.jpp.deckgen.service.csp.constraints;
 
 import java.util.Set;
 
 import de.uniwue.jpp.deckgen.model.ICard;
 import de.uniwue.jpp.deckgen.model.objectValidator;
-import de.uniwue.jpp.deckgen.service.csp.IConstraint;
 
 public class ExcludeCardConstraint implements IConstraint {
 	

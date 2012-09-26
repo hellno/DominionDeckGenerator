@@ -11,10 +11,12 @@ import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.event.ListSelectionListener;
 
 import de.uniwue.jpp.deckgen.io.CardImportService;
 import de.uniwue.jpp.deckgen.io.DeckImportExportService;
@@ -47,6 +49,7 @@ public class Dominion extends JFrame{
 	private JList<String> constraintsList = new JList<String>();
 	
 	private JList<ICard> createdCardList = new JList<ICard>();
+	private JPanel deckDetailPanel = new JPanel();
 	
 	//Inhalt
 	//..Import
@@ -58,7 +61,7 @@ public class Dominion extends JFrame{
 
 	private boolean cardImportDone = false;
 	private Set<Deck> tempDecks = new HashSet<Deck>();
-	
+		
 	//..Generate
 	private HashSet<IConstraint> constraints = new HashSet<IConstraint>();
 	private BacktrackingSolver backtrackSolver = new BacktrackingSolver();
@@ -67,11 +70,29 @@ public class Dominion extends JFrame{
 	
 	public static void main(String[] args) {
 		Dominion dominionGame = new Dominion();
+		
+		System.out.println(dominionGame);
+	}
+	
+	public String toString(){
+		return "DominionDeckGenerator";
+	}
+	
+	public Set<Deck> getTempDecks(){
+		Set<Deck> tempDecksReturn = new HashSet<Deck>();
+		tempDecksReturn.addAll(tempDecks);
+		return tempDecksReturn;
 	}
 	
 	public Set<ICard> getSolvedCards(){
 		Set<ICard> tempCards = new HashSet<ICard>();
 		tempCards.addAll(solvedCards);
+		return tempCards;
+	}
+	
+	public Set<IConstraint> getConstraints(){
+		Set<IConstraint> tempCards = new HashSet<IConstraint>();
+		tempCards.addAll(constraints);
 		return tempCards;
 	}
 	
@@ -114,7 +135,8 @@ public class Dominion extends JFrame{
 		menuPanel.add(changeToOverviewPanel);
 		//menuPanel.add(changeToGeneratePanel);
 		
-		menuPanel.setPreferredSize(new Dimension(800,80));
+		//menuPanel.setPreferredSize(new Dimension(50,800));
+		
 	}
 
 	private void generateImportPanel(){
@@ -171,12 +193,30 @@ public class Dominion extends JFrame{
 		decksList.setVisible(true);
 		decksList.setName("decksList");
 		
+		overviewPanel.add(deckDetailPanel);
+		deckDetailPanel.setLayout(new GridLayout(3,1));
+		
+		JLabel titleLabel = new JLabel();
+		titleLabel.setName("titleLabel");
+		deckDetailPanel.add(titleLabel);
+		JLabel commentLabel = new JLabel();
+		commentLabel.setName("commentLabel");
+		deckDetailPanel.add(commentLabel);
+		JList<ICard> cardsList = new JList<ICard>();
+		cardsList.setName("cardsList");
+		deckDetailPanel.add(cardsList);
+		
+		ListSelectionListener listener = new DeckListListener(this,deckDetailPanel, cardsList);
+		decksList.addListSelectionListener(listener);
+		
+		
 		listPanel.add(decksList);
 	}
 	
 	private void generateGeneratePanel(){
 		
 		generatePanel.setName("generatePanel");
+		generateContentPanel.setPreferredSize(new Dimension(300,300));
 		generatePanel.setVisible(false);
 		
 		generateContentPanel.setName("generateContentPanel");
@@ -200,7 +240,7 @@ public class Dominion extends JFrame{
 		addConstraintExtensionButton.setText("Add Extension Constraint...");
 		buttonPanel.add(addConstraintExtensionButton);
 		
-		Action findDeckAction = new findDeckAction(constraints, this);
+		Action findDeckAction = new findDeckAction(this);
 		JButton findDeckButton  = new JButton(findDeckAction);
 		buttonPanel.add(findDeckButton);
 		
@@ -228,7 +268,7 @@ public class Dominion extends JFrame{
 		//generateSaveDeckPanel.setPreferredSize(new Dimension(400,100));
 		
 		JPanel buttonAndInputPanel = new JPanel();
-		buttonAndInputPanel.setPreferredSize(new Dimension(300,300));
+		buttonAndInputPanel.setPreferredSize(new Dimension(300,150));
 		buttonAndInputPanel.setLayout(new GridLayout(3,1));
 		generateSaveDeckPanel.add(buttonAndInputPanel);
 		
@@ -278,9 +318,12 @@ public class Dominion extends JFrame{
 				updateExtensionListView();
 				updateConstraintsListView();
 				
+				generatePanel.setVisible(true);
+				generateContentPanel.setVisible(true);
 				importPanel.setVisible(false);
 				overviewPanel.setVisible(false);
-				generatePanel.setVisible(true);
+				generateSaveDeckPanel.setVisible(false);
+				
 				break;
 			case("saveDeckPanel"):
 				generateContentPanel.setVisible(false);
@@ -346,6 +389,7 @@ public class Dominion extends JFrame{
 	
 	public void saveDecksToRepo(){
 		deckRepo.addAll(tempDecks);
+		
 	}
 	
 	private void cardImportIsDone(){
@@ -365,8 +409,12 @@ public class Dominion extends JFrame{
 	
 	@SuppressWarnings("unchecked")
 	private void addDecksToView(Set<Deck> newDecks){
-		Deck[] allDecks = new Deck[newDecks.size()];
-		Iterator<Deck> myIterator = newDecks.iterator();
+		Set<Deck> allDeckSet = new HashSet<Deck>();
+		allDeckSet.addAll(tempDecks);
+		allDeckSet.addAll(newDecks);
+		
+		Deck[] allDecks = new Deck[allDeckSet.size()];
+		Iterator<Deck> myIterator = allDeckSet.iterator();
 		int count=0;
 		while(myIterator.hasNext()){
 			Deck tempDeck = myIterator.next();
@@ -376,20 +424,18 @@ public class Dominion extends JFrame{
 		
 		JList<Deck> decksList=null;
 		for(Component tempComp : ((JPanel) overviewPanel.getComponent(1)).getComponents()){
-			System.out.println(tempComp.getName());
 			if(tempComp.getName().equals("decksList"))
 				decksList=(JList<Deck>) tempComp;
 		}
 		decksList.setListData(allDecks);
-		
 		
 	}
 	
 	public void importDecks(InputStream in) {
 		Set<Deck> importedDecks = null;
 		importedDecks = deckIO.importFrom(in);
-		addDecksToView(importedDecks);
 		tempDecks.addAll(importedDecks);
+		addDecksToView(importedDecks);
 		System.out.println("Decks erfolgreich importiert");
 	}
 
@@ -431,7 +477,10 @@ public class Dominion extends JFrame{
 	public void addDeckToRepo(Deck tempDeck) {
 		tempDecks.add(tempDeck);
 		addDecksToView(tempDecks);
-		
+		//Reset der Eingabefelder
+		((JTextField)((JPanel)generateSaveDeckPanel.getComponent(0)).getComponent(0)).setText("");
+		((JTextField)((JPanel)generateSaveDeckPanel.getComponent(0)).getComponent(1)).setText("");
+		createdCardList.removeAll();
 	}
 	
 

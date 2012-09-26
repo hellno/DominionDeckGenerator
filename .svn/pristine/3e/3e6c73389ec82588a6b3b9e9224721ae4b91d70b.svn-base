@@ -1,4 +1,4 @@
-package de.uniwue.jpp.deckgen.service.csp;
+package de.uniwue.jpp.deckgen.service.csp.constraints;
 
 import java.util.Set;
 

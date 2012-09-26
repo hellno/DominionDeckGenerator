@@ -1,0 +1,75 @@
+package de.uniwue.jpp.deckgen.service.csp;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
+
+import de.uniwue.jpp.deckgen.model.ICard;
+
+public class BacktrackingSolver implements ISolver {
+
+	public BacktrackingSolver() {
+		super();
+	}
+
+	public Set<ICard> solve(Set<ICard> allCards, Set<IConstraint> constraints)
+			throws NoSolutionFoundException {
+		Set<ICard> goodCards = new HashSet<ICard>();
+		int size = allCards.size();
+		int tryCount=0;
+		int[] alreadyCheckedCards = new int[size*size*2];
+		ICard[] allCardsArray = new ICard[size];
+		allCards.toArray(allCardsArray);
+		ICard tempCard = null;
+		/*
+		for(int i=0;i<10;i++){
+			if(tryCount==size)
+				throw new NoSolutionFoundException("",constraints);
+			int rand = new Random().nextInt(size);
+			tempCard = allCardsArray[rand];
+			alreadyCheckedCards[i]=rand;
+			if(!goodCards.contains(tempCard) && checkConstraints(tempCard,constraints)){
+				goodCards.add(tempCard);
+			}
+			
+			tryCount++;
+		}
+		*/
+		while(goodCards.size()!=10){
+			int rand = new Random().nextInt(size);
+			if(!isNumberAlreadyTested(rand,alreadyCheckedCards)){
+				tempCard = allCardsArray[rand];
+				if(!checkConstraints(tempCard,constraints))
+					goodCards.add(tempCard);
+			}
+			
+			alreadyCheckedCards[tryCount]=rand;
+			if(goodCards.size()==10){
+				System.out.println("Lösung gefunden! CardCount: " + goodCards.size());
+				return goodCards;
+			}
+			tryCount++;
+		}
+		throw new NoSolutionFoundException("",constraints);		
+		
+	}
+
+	private boolean checkConstraints(ICard card, Set<IConstraint> constraints){
+		for(IConstraint constraint: constraints){
+			if(!constraint.isSatisfied(card))
+				return false;
+			
+		}
+		System.out.println(card.getName() + " erfüllt die Bedinungen nicht!");
+		return true;
+	}
+	
+	private boolean isNumberAlreadyTested(int number, int[] array){
+		for(int i=0;i<array.length;i++){
+			if(number==array[i])
+				return true;
+		}
+		return false;
+	}
+}

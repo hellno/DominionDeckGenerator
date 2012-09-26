@@ -1,0 +1,31 @@
+package de.uniwue.jpp.deckgen;
+
+import java.awt.event.ActionEvent;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.Icon;
+
+import de.uniwue.jpp.deckgen.service.csp.IConstraint;
+import de.uniwue.jpp.deckgen.service.csp.constraints.*;
+
+public class findDeckAction extends AbstractAction implements Action {
+
+	
+	private Set<IConstraint> constraints=new HashSet<IConstraint>();
+	private Dominion dominion = null;
+	
+	public findDeckAction(Set<IConstraint> constraints, Dominion dominion) {
+		super("Find Deck..");
+		this.constraints=constraints;
+		this.dominion=dominion;
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		dominion.solveDeck(constraints);
+	}
+
+}

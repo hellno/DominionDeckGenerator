@@ -51,7 +51,15 @@ public class Deck {
 	
 	@Override
 	public String toString(){
-		return  "["+title + " | " + comment + "| + "+ cards.hashCode() +"]";
+		
+	if(title.length()>12 && comment.length()>12)
+		return  "["+title.substring(0,10) + ".. | " + comment.substring(0,10) + "..]";
+	else if(comment.length()>12)
+		return "["+title + " | " + comment.substring(0,10) + "..]";
+	else if(title.length()>12)
+		return "["+title.substring(0,10) + ".. | " + comment + "]";
+	else
+		return  "["+title + " | " + comment + "]";
 		
 	}
 

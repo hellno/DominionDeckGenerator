@@ -1,0 +1,444 @@
+package de.uniwue.jpp.deckgen;
+
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+
+import javax.swing.Action;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextField;
+
+import de.uniwue.jpp.deckgen.io.CardImportService;
+import de.uniwue.jpp.deckgen.io.DeckImportExportService;
+import de.uniwue.jpp.deckgen.model.Deck;
+import de.uniwue.jpp.deckgen.model.ICard;
+import de.uniwue.jpp.deckgen.model.objectValidator;
+import de.uniwue.jpp.deckgen.repository.CardRepository;
+import de.uniwue.jpp.deckgen.repository.DeckRepository;
+import de.uniwue.jpp.deckgen.service.csp.BacktrackingSolver;
+import de.uniwue.jpp.deckgen.service.csp.IConstraint;
+import de.uniwue.jpp.deckgen.service.csp.constraints.*;
+
+public class Dominion extends JFrame{
+
+	private static final long serialVersionUID = 1L;
+	
+	//View
+	private JPanel importPanel  = new JPanel();
+	private JPanel overviewPanel = new JPanel();
+	private JPanel generatePanel = new JPanel();
+	
+	private JPanel generateContentPanel = new JPanel();
+	private JPanel generateSaveDeckPanel = new JPanel();
+	
+	private JPanel menuPanel = new JPanel();
+	private JPanel contentPanel = new JPanel();
+	
+	private JList<String> cardImportOverview = new JList<String>();
+	private JList<String> cardList = new JList<String>();
+	private JList<String> extensionList = new JList<String>();
+	private JList<String> constraintsList = new JList<String>();
+	
+	private JList<ICard> createdCardList = new JList<ICard>();
+	
+	//Inhalt
+	//..Import
+	private CardRepository cardRepo=new CardRepository();
+	private DeckRepository deckRepo = new DeckRepository();
+	
+	private CardImportService cardInput = new CardImportService();
+	private DeckImportExportService deckIO = new DeckImportExportService(cardRepo);
+
+	private boolean cardImportDone = false;
+	private Set<Deck> tempDecks = new HashSet<Deck>();
+	
+	//..Generate
+	private HashSet<IConstraint> constraints = new HashSet<IConstraint>();
+	private BacktrackingSolver backtrackSolver = new BacktrackingSolver();
+	
+	private Set<ICard> solvedCards = new HashSet<ICard>();
+	
+	public static void main(String[] args) {
+		Dominion dominionGame = new Dominion();
+		System.out.println(dominionGame);
+	}
+	
+	public String toString(){
+		return "DominionDeckGenerator";
+	}
+	
+	public Set<ICard> getSolvedCards(){
+		Set<ICard> tempCards = new HashSet<ICard>();
+		tempCards.addAll(solvedCards);
+		return tempCards;
+	}
+	
+	public Dominion() {
+		// TODO Auto-generated constructor stub
+		super();
+		JFrame.setDefaultLookAndFeelDecorated(true);
+		//this.setPreferredSize(new Dimension(800,500));
+		this.setName("Dominion");
+		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		this.add(menuPanel);
+		this.add(contentPanel);
+		contentPanel.add(importPanel);
+		contentPanel.add(overviewPanel);
+		contentPanel.add(generatePanel);
+		contentPanel.setPreferredSize(new Dimension(700,300));
+		
+		generateImportPanel();
+		generateOverviewPanel();
+		generateGeneratePanel();
+		
+		generateMenuPanel();
+		
+		this.setLayout(new GridLayout(2,1));
+		this.pack();
+		this.setVisible(true);
+	}
+
+	private void generateMenuPanel() {
+		Action changeFrontPanelToStart = new ChangeFrontPanelAction(this, "startPanel");
+		Action changeFrontPanelToOverview = new ChangeFrontPanelAction(this, "overviewPanel");
+		//Action changeFrontPanelToGenerate = new ChangeFrontPanel(this, "generatePanel");
+		
+		JButton changeToImportPanel = new JButton(changeFrontPanelToStart);
+		JButton changeToOverviewPanel = new JButton(changeFrontPanelToOverview);
+		//JButton changeToGeneratePanel = new JButton(changeFrontPanelToGenerate);
+		
+		menuPanel.add(changeToImportPanel);
+		menuPanel.add(changeToOverviewPanel);
+		//menuPanel.add(changeToGeneratePanel);
+		
+		menuPanel.setPreferredSize(new Dimension(800,80));
+	}
+
+	private void generateImportPanel(){
+		importPanel.setName("startPanel");
+		//importPanel.setLayout(new GridLayout(2,1));
+		
+		Action importAction = new ImportAction(importPanel, this, true);
+		JButton importButton = new JButton(importAction);
+		importButton.setText("CardImport...");
+		importButton.setPreferredSize(new Dimension(130,70));
+		importPanel.add(importButton);
+		
+		cardImportOverview.setVisible(false);
+		cardImportOverview.setName("cardList");
+		cardImportOverview.setEnabled(false);
+		JScrollPane scrollPane = new JScrollPane(cardImportOverview);
+		scrollPane.setPreferredSize(new Dimension(130,250));
+		importPanel.add(scrollPane);
+	}
+	
+	private void generateOverviewPanel(){		
+		overviewPanel.setLayout(new GridLayout(1,2));
+		overviewPanel.setName("overviewPanel");
+		overviewPanel.setVisible(false);
+		
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new GridLayout(3,1));
+		buttonPanel.setPreferredSize(new Dimension(130,130));
+		overviewPanel.add(buttonPanel);
+		JPanel listPanel = new JPanel();
+		listPanel.setPreferredSize(new Dimension(200,150));
+		overviewPanel.add(listPanel);
+		
+		Action importAction = new ImportAction(importPanel, this, false);
+		JButton importButton = new JButton(importAction);
+		
+		importButton.setText("DeckImport...");
+		importButton.setName("importButton");
+		importButton.setEnabled(false);
+		buttonPanel.add(importButton);
+		
+		Action saveGeneratedDecks = new SaveGeneratedDecks("Save",this);
+		JButton saveButton = new JButton(saveGeneratedDecks);
+		saveButton.setName("saveButton");
+		buttonPanel.add(saveButton);
+		
+		Action changeFrontPanelToGenerate = new ChangeFrontPanelAction(this, "generatePanel");
+		JButton generateButton = new JButton(changeFrontPanelToGenerate);
+		generateButton.setText("New");
+		generateButton.setName("generateButton");
+		buttonPanel.add(generateButton);
+		
+		JList<Deck> decksList = new JList<Deck>();
+		decksList.setVisible(true);
+		decksList.setName("decksList");
+		
+		listPanel.add(decksList);
+	}
+	
+	private void generateGeneratePanel(){
+		
+		generatePanel.setName("generatePanel");
+		generatePanel.setVisible(false);
+		
+		generateContentPanel.setName("generateContentPanel");
+		generateContentPanel.setLayout(new GridLayout(2,2));
+		generatePanel.add(generateContentPanel);
+		
+		generateSaveDeckPanel.setName("saveDeckPanel");
+		generateSaveDeckPanel.setVisible(false);
+		
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new GridLayout(3,1));
+		generateContentPanel.add(buttonPanel);
+		
+		Action addConstraintCardAction = new AddConstraintAction(this, cardRepo, cardList);
+		JButton addConstraintCardButton  = new JButton(addConstraintCardAction);
+		addConstraintCardButton.setText("Add Card Constraint...");
+		buttonPanel.add(addConstraintCardButton);
+		
+		Action addConstraintExtensionAction = new AddConstraintAction(this, cardRepo, extensionList);
+		JButton addConstraintExtensionButton  = new JButton(addConstraintExtensionAction);
+		addConstraintExtensionButton.setText("Add Extension Constraint...");
+		buttonPanel.add(addConstraintExtensionButton);
+		
+		Action findDeckAction = new findDeckAction(constraints, this);
+		JButton findDeckButton  = new JButton(findDeckAction);
+		buttonPanel.add(findDeckButton);
+		
+		constraintsList.setVisible(true);
+		constraintsList.setName("constraintsList");
+		generateContentPanel.add(new JScrollPane(constraintsList));
+		
+		cardList.setVisible(true);
+		cardList.setName("cardList");
+		generateContentPanel.add(new JScrollPane(cardList));
+				
+		extensionList.setVisible(true);
+		extensionList.setName("extensionList");
+		
+		generateSaveDeckPanel();
+		
+		generateContentPanel.add(new JScrollPane(extensionList));
+		
+	}
+	
+	public void generateSaveDeckPanel(){
+		generatePanel.add(generateSaveDeckPanel);
+		
+		generateSaveDeckPanel.setLayout(new GridLayout(1,2));
+		//generateSaveDeckPanel.setPreferredSize(new Dimension(400,100));
+		
+		JPanel buttonAndInputPanel = new JPanel();
+		buttonAndInputPanel.setPreferredSize(new Dimension(300,300));
+		buttonAndInputPanel.setLayout(new GridLayout(3,1));
+		generateSaveDeckPanel.add(buttonAndInputPanel);
+		
+		
+		JTextField nameInput = new JTextField();
+		nameInput.setName("nameInput");
+		buttonAndInputPanel.add(nameInput);
+		JTextField commentInput = new JTextField();
+		commentInput.setName("commentInput");
+		buttonAndInputPanel.add(commentInput);
+		
+		Action addDeckAction = new AddDeckAction(this, buttonAndInputPanel);
+		JButton addDeckButton = new JButton(addDeckAction);
+		addDeckButton.setName("addDeckButton");
+		addDeckButton.setText("Save...");
+		buttonAndInputPanel.add(addDeckButton);
+		
+		createdCardList.setName("cardList");
+		JScrollPane cardScrollPane = new JScrollPane(createdCardList);
+		cardScrollPane.setPreferredSize(new Dimension(200,200));
+		generateSaveDeckPanel.add(cardScrollPane);
+		
+		
+	}
+	
+	
+	public void changeFrontPanel(String newFrontPanel){
+		switch(newFrontPanel){
+			case("startPanel"):
+				importPanel.setVisible(true);
+				overviewPanel.setVisible(false);
+				generatePanel.setVisible(false);
+				break;	
+			case("overviewPanel"):
+				importPanel.setVisible(false);
+				overviewPanel.setVisible(true);
+				generatePanel.setVisible(false);
+				
+				//System.out.println("ButtonBreite: "+((JPanel) overviewPanel.getComponent(0)).getComponent(0).getWidth());
+				if(cardImportDone){
+					((JPanel) overviewPanel.getComponent(0)).getComponent(0).setEnabled(true);
+				}
+				break;	
+			case("generatePanel"):
+				constraints = new HashSet<IConstraint>();
+				updateCardListView();
+				updateExtensionListView();
+				updateConstraintsListView();
+				
+				importPanel.setVisible(false);
+				overviewPanel.setVisible(false);
+				generatePanel.setVisible(true);
+				break;
+			case("saveDeckPanel"):
+				generateContentPanel.setVisible(false);
+				generateSaveDeckPanel.setVisible(true);
+				
+				break;
+			default:
+				System.out.println("Falsche changeFrontPanel-Auswahl");
+				break;
+		}
+		
+	}
+	
+	private void updateExtensionListView() {
+		String[] allExtensions = new String[cardRepo.getExtensions().size()];
+		Iterator<String> myIterator = cardRepo.getExtensions().iterator();
+		int count=0;
+		while(myIterator.hasNext()){
+			String tempExt = myIterator.next();
+			allExtensions[count]=tempExt;
+			count++;
+		}
+		
+		extensionList.setListData(allExtensions);
+	}
+
+	private void updateCardListView(){
+		
+		String[] allCards = new String[cardRepo.getAll().size()];
+		Iterator<ICard> myIterator = cardRepo.getAll().iterator();
+		int count=0;
+		while(myIterator.hasNext()){
+			ICard tempCard = myIterator.next();
+			allCards[count]=tempCard.getName();
+			count++;
+		}
+		
+		cardList.setListData(allCards);
+	}
+	
+	public  void updateConstraintsListView(){
+		
+		String[] allExtensions = new String[constraints.size()];
+		Iterator<IConstraint> myIterator = constraints.iterator();
+		int count=0;
+		while(myIterator.hasNext()){
+			IConstraint tempString = myIterator.next();
+			allExtensions[count]=tempString.toString();
+			count++;
+		}
+		
+		constraintsList.setListData(allExtensions);
+	}
+	
+	public void importCards(InputStream in) {
+		int countBeforeImport = cardRepo.getAll().size();
+		Set<ICard> importedCards = null;
+		importedCards = cardInput.importFrom(in);
+		cardRepo.addAll(importedCards);
+		cardImportIsDone();
+		System.out.println("Karten erfolgreich importiert, neue Karten: " + ( cardRepo.getAll().size() - countBeforeImport));
+	}
+	
+	public void saveDecksToRepo(){
+		deckRepo.addAll(tempDecks);
+	}
+	
+	private void cardImportIsDone(){
+		cardImportDone = true;
+		String[] allCards = new String[cardRepo.getAll().size()];
+		Iterator<ICard> myIterator = cardRepo.getAll().iterator();
+		int count=0;
+		while(myIterator.hasNext()){
+			ICard tempCard = myIterator.next();
+			allCards[count]=tempCard.getName();
+			count++;
+		}
+		
+		cardImportOverview.setListData(allCards);
+		cardImportOverview.setVisible(true);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void addDecksToView(Set<Deck> newDecks){
+		Deck[] allDecks = new Deck[newDecks.size()];
+		Iterator<Deck> myIterator = newDecks.iterator();
+		int count=0;
+		while(myIterator.hasNext()){
+			Deck tempDeck = myIterator.next();
+			allDecks[count]=tempDeck;
+			count++;
+		}
+		
+		JList<Deck> decksList=null;
+		for(Component tempComp : ((JPanel) overviewPanel.getComponent(1)).getComponents()){
+			System.out.println(tempComp.getName());
+			if(tempComp.getName().equals("decksList"))
+				decksList=(JList<Deck>) tempComp;
+		}
+		decksList.setListData(allDecks);
+		
+		
+	}
+	
+	public void importDecks(InputStream in) {
+		Set<Deck> importedDecks = null;
+		importedDecks = deckIO.importFrom(in);
+		addDecksToView(importedDecks);
+		tempDecks.addAll(importedDecks);
+		System.out.println("Decks erfolgreich importiert");
+	}
+
+	public void addConstraint(IConstraint constraint) {
+		objectValidator.validate(constraint);
+		boolean check=true;
+		for(IConstraint tempConst : constraints){
+			if(tempConst.equals(constraint))
+				check=false;
+		}
+		
+		if(check){
+			constraints.add(constraint);
+			updateConstraintsListView();
+			System.out.println("Constraint hinzugefügt");
+		}
+	}
+
+	public void solveDeck(Set<IConstraint> constraints2) {
+		solvedCards = backtrackSolver.solve(cardRepo.getAll(), constraints2);
+		
+		if(solvedCards!=null){
+			changeFrontPanel("saveDeckPanel");
+		
+			ICard[] allCards = new ICard[solvedCards.size()];
+			Iterator<ICard> myIterator = solvedCards.iterator();
+			int count=0;
+			while(myIterator.hasNext()){
+				ICard tempCard = myIterator.next();
+				allCards[count]=tempCard;
+				count++;
+			}
+			
+			createdCardList.setListData(allCards);
+			
+		}
+	}
+
+	public void addDeckToRepo(Deck tempDeck) {
+		tempDecks.add(tempDeck);
+		addDecksToView(tempDecks);
+		
+	}
+	
+
+}

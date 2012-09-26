@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import de.uniwue.jpp.deckgen.io.CardImportService;
@@ -14,8 +13,8 @@ import de.uniwue.jpp.deckgen.model.*;
 import de.uniwue.jpp.deckgen.repository.CardRepository;
 import de.uniwue.jpp.deckgen.repository.DeckRepository;
 import de.uniwue.jpp.deckgen.service.csp.BacktrackingSolver;
-import de.uniwue.jpp.deckgen.service.csp.ExcludeCardConstraint;
 import de.uniwue.jpp.deckgen.service.csp.IConstraint;
+import de.uniwue.jpp.deckgen.service.csp.constraints.*;
 
 public class myTestClass {
 
@@ -38,6 +37,8 @@ public class myTestClass {
 		ActionCard zwölf = new ActionCard("Tony", "macht nix", "Basis", 23);
 		ActionCard dreizehn = new ActionCard("Döner", "macht nix", "Basis", 23);
 		VictoryCard victory = new VictoryCard("SIEG" , "einfach gewinnen", "Basis", 23,3);
+		ActionCard compCard1 = new ActionCard("Tony", "macht nix", "Basis", 23);
+		VictoryCard compCard2 = new VictoryCard("HALLO", "TEST", "Arsch", 42,12);
 		
 		Set<ICard> tempDeckCards = new HashSet<ICard>();
 		tempDeckCards.add(eins);
@@ -52,52 +53,46 @@ public class myTestClass {
 		tempDeckCards.add(zehn);
 		
 		Set<ICard> copyDeckCards = new HashSet<ICard>();
-		copyDeckCards.add(zwölf);
+		copyDeckCards.add(eins);
 		copyDeckCards.add(zwei);
 		copyDeckCards.add(drei);
 		copyDeckCards.add(vier);
-		copyDeckCards.add(elf);
+		copyDeckCards.add(fünf);
 		copyDeckCards.add(sechs);
 		copyDeckCards.add(sieben);
 		copyDeckCards.add(acht);
 		copyDeckCards.add(neun);
-		copyDeckCards.add(eins);
-		
-		Set<ICard> wrongDeckCards = new HashSet<ICard>();
-		wrongDeckCards.add(eins);
-		wrongDeckCards.add(zwei);
-		wrongDeckCards.add(drei);
-		wrongDeckCards.add(vier);
-		wrongDeckCards.add(elf);
-		wrongDeckCards.add(sechs);
-		wrongDeckCards.add(sieben);
-		wrongDeckCards.add(acht);
-		wrongDeckCards.add(neun);
-		wrongDeckCards.add(zwölf);
+		copyDeckCards.add(zehn);
 		
 		
 		Deck tempDeck = new Deck("ErstesDeck", "macht nix", tempDeckCards);
 		Deck copyDeck = new Deck("Check","TEST",copyDeckCards);
-		Deck wrongDeck = new Deck("Check" , "TEST", wrongDeckCards);
+		Set<ICard> checkDeckCards = new HashSet<ICard>();
+		checkDeckCards.addAll(tempDeckCards);
+		Deck checkDeck = new Deck("CheckDeck" , "Deck zum Testen" , checkDeckCards);
 		
 		DeckRepository myDeckRepo = new DeckRepository();
 		CardRepository myCardRepo = new CardRepository(tempDeckCards);
 		
+		
 		Set<ICard> allCards = new HashSet<ICard>();
+		
 		allCards.addAll(tempDeckCards);
 		allCards.add(elf);
 		allCards.add(zwölf);
 		allCards.add(dreizehn);
+		allCards.add(compCard1);
+		allCards.add(compCard2);
 		
+		System.out.println("AllCardsCount: " + allCards.size());
 		myDeckRepo.add(tempDeck);
-		myCardRepo.addAll(tempDeckCards);
 		
 		DeckImportExportService deckIO = new DeckImportExportService(myCardRepo);
 		CardImportService cardInput = new CardImportService();
 		
-		File file = new File("/Users/holger/AeroFS/dev/Java/DominionDeckGenerator/decksTest.xml");
+		File file = new File("/Users/holger/AeroFS/dev/Java/Programmierpraktikum/DominionDeckGenerator/decksTest.xml");
 		InputStream in;
-		Set<Deck> importedDecks = new HashSet<Deck>();
+		Set<Deck> importedDecks = null;
 		try {
 			in = new FileInputStream(file);
 			importedDecks = deckIO.importFrom(in);
@@ -106,8 +101,8 @@ public class myTestClass {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		Set<ICard> importedCards= new HashSet<ICard>();
-		file = new File("/Users/holger/AeroFS/dev/Java/DominionDeckGenerator/cardsTest.xml");
+		Set<ICard> importedCards=null;
+		file = new File("/Users/holger/AeroFS/dev/Java/Programmierpraktikum/DominionDeckGenerator/cardsTest.xml");
 		try {
 			in = new FileInputStream(file);
 			importedCards = cardInput.importFrom(in);
@@ -118,19 +113,19 @@ public class myTestClass {
 		
 		HashSet<Deck> deckSet = new HashSet<Deck>();
 		deckSet.add(tempDeck);
-		deckIO.exportTo(deckSet, System.out);
+		//deckIO.exportTo(deckSet, System.out);
 		
 		ExcludeCardConstraint keineHexe = new ExcludeCardConstraint(zehn);
 		HashSet<IConstraint> constraints = new HashSet<IConstraint>();
 		constraints.add(keineHexe);
-		//BacktrackingSolver mySolver = new BacktrackingSolver();
-		//Set<ICard> solvedDeck = mySolver.solve(allCards, constraints);
-		//Deck solveDeck = new Deck("solverBenutzt", "hallo", solvedDeck);
 		
+		BacktrackingSolver mySolver = new BacktrackingSolver();
+		Set<ICard> solvedDeck = mySolver.solve(allCards, constraints);
+		Deck solveDeck = new Deck("solverBenutzt", "hallo", solvedDeck);
+		System.out.println("solvedDeck: " + solveDeck);
 		
-		System.out.println("DeckVergleich1:" + tempDeck.equals(copyDeck));
-		System.out.println("DeckVergleich2(self):" + copyDeck.equals(copyDeck));
-		System.out.println("DeckVergleich3:" + copyDeck.equals(wrongDeck));
+		System.out.println(compCard1 + " | " + compCard2 + " "+compCard1.equals(compCard2));
+		
 		
 	}
 
